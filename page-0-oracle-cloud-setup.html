@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpacetimeDB on Oracle Cloud - Getting Started</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #0D47A1;
+            border-bottom: 2px solid #0D47A1;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #1976D2;
+            margin-top: 30px;
+        }
+        code {
+            background-color: #f5f5f5;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Courier New', monospace;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Courier New', monospace;
+            position: relative;
+        }
+        pre .copy-button {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            padding: 3px 8px;
+            background-color: #e0e0e0;
+            border: none;
+            border-radius: 3px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        pre .copy-button:hover {
+            background-color: #d0d0d0;
+        }
+        .note {
+            background-color: #e1f5fe;
+            border-left: 4px solid #03a9f4;
+            padding: 10px 15px;
+            margin: 20px 0;
+        }
+        .warning {
+            background-color: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 10px 15px;
+            margin: 20px 0;
+        }
+        .success {
+            background-color: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 10px 15px;
+            margin: 20px 0;
+        }
+        .tip {
+            background-color: #f3e5f5;
+            border-left: 4px solid #9c27b0;
+            padding: 10px 15px;
+            margin: 20px 0;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 20px auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        details {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 15px 0;
+        }
+        summary {
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .step {
+            margin-bottom: 30px;
+            border-bottom: 1px dashed #ccc;
+            padding-bottom: 20px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f5f5f5;
+        }
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+        .pagination a {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #1976D2;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .pagination a:hover {
+            background-color: #0D47A1;
+        }
+        .pagination .disabled {
+            background-color: #cccccc;
+            color: #666666;
+            cursor: not-allowed;
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const preElements = document.querySelectorAll('pre');
+            
+            preElements.forEach(function(pre) {
+                // Create smart copy button
+                const button = document.createElement('button');
+                button.className = 'copy-button';
+                button.textContent = 'Smart Copy';
+                
+                // Add button to pre element
+                pre.appendChild(button);
+                
+                // Smart copy functionality
+                button.addEventListener('click', function() {
+                    let code = pre.textContent.replace('Smart Copy', '').trim();
+                    const lines = code.split('\n').filter(line => line.trim() !== '');
+                    
+                    // If multiple lines, join with semicolons for terminal compatibility
+                    if (lines.length > 1) {
+                        code = lines.join(' ; ');
+                    }
+                    
+                    navigator.clipboard.writeText(code)
+                        .then(() => {
+                            button.textContent = 'Copied!';
+                            setTimeout(() => {
+                                button.textContent = 'Smart Copy';
+                            }, 2000);
+                        })
+                        .catch(err => {
+                            console.error('Could not copy text: ', err);
+                        });
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>SpacetimeDB on Oracle Cloud Free Tier</h1>
+    <h2>Step 0: Setting Up Oracle Cloud</h2>
+    
+    <p>This guide will walk you through creating a free Oracle Cloud account and setting up a Virtual Machine (VM) that will host your SpacetimeDB server.</p>
+
+    <div class="step">
+        <h3>Creating an Oracle Cloud Account</h3>
+        <p>Oracle Cloud offers an Always Free tier that includes generous resources perfect for hosting SpacetimeDB:</p>
+        
+        <ul>
+            <li>Up to 4 ARM-based compute instances (or 2 AMD instances)</li>
+            <li>Up to 24 GB RAM total across instances</li>
+            <li>200 GB total storage</li>
+            <li>No time limit - truly free forever</li>
+        </ul>
+        
+        <div class="warning">
+            <strong>Credit Card Required:</strong> Oracle requires a credit card during signup for identity verification, but you will NOT be charged unless you explicitly upgrade to a paid account.
+        </div>
+        
+        <p><strong>Sign up steps:</strong></p>
+        <ol>
+            <li>Navigate to <a href="https://www.oracle.com/cloud/free/" target="_blank">oracle.com/cloud/free</a></li>
+            <li>Click "Start for free"</li>
+            <li>Fill in your account information</li>
+            <li>Choose your home region (cannot be changed later - choose one geographically close to you)</li>
+            <li>Enter credit card information for verification</li>
+            <li>Complete email verification</li>
+        </ol>
+        
+        <div class="note">
+            <strong>Note:</strong> After signing up, it may take a few minutes for your account to be fully provisioned.
+        </div>
+        
+        <!-- TODO: Add screenshot of Oracle signup page -->
+    </div>
+    
+    <div class="step">
+        <h3>Creating Your Virtual Machine</h3>
+        <p>Once logged into the Oracle Cloud Console, you'll create a compute instance to host SpacetimeDB.</p>
+        
+        <h4>Navigate to Compute Instances</h4>
+        <ol>
+            <li>From the Oracle Cloud Console home page, click the hamburger menu (≡) in the top-left</li>
+            <li>Navigate to <strong>Compute → Instances</strong></li>
+            <li>Click <strong>"Create Instance"</strong></li>
+        </ol>
+        
+        <!-- TODO: Add screenshot of navigation to compute instances -->
+        
+        <h4>Configure Your Instance</h4>
+        
+        <p><strong>Name:</strong> Give your instance a memorable name (e.g., "stdb-free")</p>
+        
+        <p><strong>Placement:</strong></p>
+        <ul>
+            <li>Availability Domain: Choose any available domain</li>
+            <li>Fault Domain: Leave as default</li>
+        </ul>
+        
+        <p><strong>Image and Shape:</strong></p>
+        <ul>
+            <li><strong>Image:</strong> Select <strong>Ubuntu 22.04</strong> (recommended) or Ubuntu 24.04</li>
+            <li><strong>Shape:</strong> Click "Change Shape"</li>
+        </ul>
+        
+        <div class="warning">
+            <strong>Important - Always Free Shape Selection:</strong>
+            <ul>
+                <li>Select <strong>Ampere (ARM-based)</strong> processor</li>
+                <li>Choose <strong>VM.Standard.A1.Flex</strong></li>
+                <li>Configure: 2 OCPUs, 12 GB RAM (or more if available)</li>
+                <li>Look for the "Always Free-eligible" label</li>
+            </ul>
+        </div>
+        
+        <!-- TODO: Add screenshot of shape selection -->
+        
+        <div class="tip">
+            <strong>Capacity Issues:</strong> ARM instances are popular and often show "Out of capacity" errors. Try:
+            <ul>
+                <li>Different availability domains</li>
+                <li>Off-peak hours (early morning in your region's timezone)</li>
+                <li>Requesting fewer resources (1 OCPU, 6 GB RAM)</li>
+                <li>Checking back over several days</li>
+            </ul>
+        </div>
+        
+        <p><strong>Networking:</strong></p>
+        <ul>
+            <li><strong>Virtual Cloud Network (VCN):</strong> Oracle will create one automatically if you don't have one</li>
+            <li><strong>Subnet:</strong> Use the default public subnet</li>
+            <li><strong>Public IP Address:</strong> Select "Assign a public IPv4 address"</li>
+        </ul>
+        
+        <!-- TODO: Add screenshot of networking configuration -->
+    </div>
+    
+    <div class="step">
+        <h3>SSH Key Setup</h3>
+        <p>SSH keys are used to securely connect to your VM. Oracle will help you generate these during instance creation.</p>
+        
+        <p><strong>In the "Add SSH keys" section:</strong></p>
+        <ol>
+            <li>Select <strong>"Generate a key pair for me"</strong></li>
+            <li>Click <strong>"Save Private Key"</strong> - this downloads a <code>.key</code> file</li>
+            <li>Optionally click "Save Public Key" (though you won't need it)</li>
+        </ol>
+        
+        <div class="warning">
+            <strong>Critical:</strong> Save the private key file in a secure location on your computer. You'll need it to connect to your server. If you lose it, you won't be able to access your VM!
+        </div>
+        
+        <p><strong>Recommended location:</strong> Create a folder like <code>C:\keys\</code> or <code>D:\keys\</code> and store the key there.</p>
+        
+        <!-- TODO: Add screenshot of SSH key generation section -->
+    </div>
+    
+    <div class="step">
+        <h3>Create the Instance</h3>
+        <p>Review your configuration and click <strong>"Create"</strong> at the bottom of the page.</p>
+        
+        <p>The instance will take 2-3 minutes to provision. You'll see the status change from "Provisioning" to "Running".</p>
+        
+        <div class="success">
+            <strong>Instance Created!</strong> Note your instance's public IP address - you'll need it to connect.
+        </div>
+        
+        <!-- TODO: Add screenshot of running instance with IP address highlighted -->
+    </div>
+    
+    <div class="step">
+        <h3>Configuring Network Security</h3>
+        <p>By default, Oracle Cloud only allows SSH traffic (port 22). We need to open additional ports for SpacetimeDB and HTTPS.</p>
+        
+        <h4>Add Ingress Rules</h4>
+        <ol>
+            <li>From your instance details page, scroll down to <strong>"Primary VNIC"</strong></li>
+            <li>Click on the <strong>Subnet</strong> link</li>
+            <li>Under "Security Lists", click on the <strong>Default Security List</strong></li>
+            <li>Click <strong>"Add Ingress Rules"</strong></li>
+        </ol>
+        
+        <!-- TODO: Add screenshot of navigating to security lists -->
+        
+        <p><strong>Add these three rules:</strong></p>
+        
+        <table>
+            <tr>
+                <th>Description</th>
+                <th>Source CIDR</th>
+                <th>IP Protocol</th>
+                <th>Destination Port</th>
+            </tr>
+            <tr>
+                <td>HTTP</td>
+                <td>0.0.0.0/0</td>
+                <td>TCP</td>
+                <td>80</td>
+            </tr>
+            <tr>
+                <td>HTTPS</td>
+                <td>0.0.0.0/0</td>
+                <td>TCP</td>
+                <td>443</td>
+            </tr>
+            <tr>
+                <td>SpacetimeDB</td>
+                <td>0.0.0.0/0</td>
+                <td>TCP</td>
+                <td>3000</td>
+            </tr>
+        </table>
+        
+        <div class="note">
+            <strong>Note:</strong> For each rule, leave "Source Port Range" blank and set only the "Destination Port Range" to the specific port number.
+        </div>
+        
+        <!-- TODO: Add screenshot of adding ingress rules -->
+    </div>
+    
+    <div class="step">
+        <h3>Preparing to Connect from Windows</h3>
+        <p>Before connecting to your VM, you need to configure SSH key permissions on Windows.</p>
+        
+        <h4>Fix Key Permissions</h4>
+        <p>Windows SSH requires strict permissions on private keys. Open PowerShell as Administrator and run:</p>
+        
+        <pre>icacls "C:\keys\your-key-name.key" /inheritance:r
+icacls "C:\keys\your-key-name.key" /grant:r "%USERNAME%:R"
+icacls "C:\keys\your-key-name.key" /remove "NT AUTHORITY\Authenticated Users"</pre>
+        
+        <div class="note">
+            <strong>Note:</strong> Replace <code>C:\keys\your-key-name.key</code> with the actual path to your downloaded private key.
+        </div>
+    </div>
+    
+    <div class="step">
+        <h3>First Connection</h3>
+        <p>Now you're ready to connect to your VM! Open Command Prompt or PowerShell and run:</p>
+        
+        <pre>ssh -i "C:\keys\your-key-name.key" ubuntu@YOUR_VM_IP</pre>
+        
+        <div class="warning">
+            <strong>Important:</strong> Replace <code>YOUR_VM_IP</code> with your instance's actual public IP address from the Oracle Cloud Console.
+        </div>
+        
+        <p>When prompted about the host's authenticity, type <code>yes</code> and press Enter.</p>
+        
+        <div class="success">
+            <strong>Connected!</strong> You should now see a command prompt like <code>ubuntu@stdb-free:~$</code>
+        </div>
+    </div>
+    
+    <div class="step">
+        <h3>Optional: Converting Keys for PuTTY</h3>
+        <p>If you plan to use PuTTY or plink (for deployment scripts), you'll need to convert your key to PuTTY's .ppk format.</p>
+        
+        <ol>
+            <li>Download and install PuTTY from <a href="https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html" target="_blank">the official site</a></li>
+            <li>Open <strong>PuTTYgen</strong> (installed with PuTTY)</li>
+            <li>Click <strong>"Load"</strong> and select your .key file</li>
+            <li>Change file type filter to "All Files (*.*)" if you don't see your .key file</li>
+            <li>Click <strong>"Save private key"</strong></li>
+            <li>Save it with a .ppk extension (e.g., <code>your-key-name.ppk</code>)</li>
+        </ol>
+        
+        <div class="note">
+            <strong>Usage:</strong>
+            <ul>
+                <li>Use the <code>.key</code> file for SSH connections from Command Prompt</li>
+                <li>Use the <code>.ppk</code> file for PuTTY and plink commands</li>
+            </ul>
+        </div>
+    </div>
+    
+    <h2>Next Steps</h2>
+    <p>Your Oracle Cloud VM is now ready! In the next section, we'll connect to the server and begin preparing it for SpacetimeDB installation.</p>
+    
+    <div class="pagination">
+        <a href="#" class="disabled">Previous</a>
+        <a href="page-1-connection.html">Next: Connecting to Your VM</a>
+    </div>
+</body>
+</html>
